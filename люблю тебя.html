@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Для тебя ❤️</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #ffe6f0, #ffe6e6);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 28px 20px 24px;
+      box-shadow: 0 10px 30px rgba(214, 51, 132, 0.15);
+      max-width: 420px;
+      width: 100%;
+    }
+
+    h1 { color: #d63384; font-size: 26px; margin-bottom: 8px; }
+    .sub { color: #888; font-size: 15px; margin-bottom: 20px; }
+
+    .photo-frame {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #f7d6e0;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.3s ease;
+    }
+
+    .photo-frame img.fade { opacity: 0; }
+
+    .hint { margin-top: 14px; font-size: 14px; color: #b06a8a; }
+    .counter { margin-top: 6px; font-size: 13px; color: #c99; }
+
+    .love-text { margin-top: 18px; font-size: 18px; color: #555; line-height: 1.6; }
+    .love-text strong { color: #d63384; }
+
+    .hearts { font-size: 22px; margin-top: 10px; letter-spacing: 4px; }
+
+    /* --- Игра --- */
+    .game-btn {
+      margin-top: 16px;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 50px;
+      background: #d63384;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .game-btn:active { transform: scale(0.96); }
+
+    .game-area {
+      display: none;
+      margin-top: 18px;
+      position: relative;
+      width: 100%;
+      height: 220px;
+      background: #fff0f5;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 2px dashed #f3c1d6;
+    }
+    .game-area.active { display: block; }
+
+    .heart {
+      position: absolute;
+      font-size: 32px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.1s;
+      line-height: 1;
+    }
+    .heart:active { transform: scale(1.3); }
+
+    .game-score {
+      margin-top: 10px;
+      font-size: 15px;
+      color: #b06a8a;
+    }
+
+    .game-win {
+      display: none;
+      margin-top: 14px;
+      font-size: 17px;
+      color: #d63384;
+      font-weight: bold;
+      line-height: 1.5;
+    }
+    .game-win.show { display: block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Я тебя люблю, зайка ❤️</h1>
+    <p class="sub">Листай наши фотки — нажми на фото</p>
+
+    <div class="photo-frame" id="frame">
+      <img id="photo" src="photo1.jpg" alt="Наше фото">
+    </div>
+
+    <p class="hint">Нажми, чтобы увидеть следующую 📸</p>
+    <p class="counter" id="counter">1 / 5</p>
+
+    <p class="love-text">
+      Ты — <strong>самое лучшее</strong>, что случилось в моей жизни.<br>
+      Спасибо, что ты рядом.
+    </p>
+    <p class="hearts">💕 💖 💕</p>
+
+    <!-- Мини-игра -->
+    <button class="game-btn" id="gameBtn">Сыграть в игру ❤️</button>
+
+    <div class="game-area" id="gameArea">
+      <span class="heart" id="heart">❤️</span>
+    </div>
+    <p class="game-score" id="gameScore">Поймано: 0 / 10</p>
+    <p class="game-win" id="gameWin">Ты поймала все мои сердечки. Я тебя люблю! 💖</p>
+  </div>
+
+  <script>
+    // --- Фотогалерея ---
+    const photos = [
+      "photo1.jpg",
+      "photo2.jpg",
+      "photo3.jpg",
+      "photo4.jpg",
+      "photo5.jpg"
+    ];
+
+    let index = 0;
+    const img = document.getElementById("photo");
+    const counter = document.getElementById("counter");
+    const frame = document.getElementById("frame");
+
+    function updateCounter() {
+      counter.textContent = (index + 1) + " / " + photos.length;
+    }
+
+    function nextPhoto() {
+      img.classList.add("fade");
+      setTimeout(() => {
+        index = (index + 1) % photos.length;
+        img.src = photos[index];
+        img.onload = () => img.classList.remove("fade");
+        updateCounter();
+      }, 250);
+    }
+
+    frame.addEventListener("click", nextPhoto);
+
+    let touchStartX = 0;
+    frame.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    frame.addEventListener("touchend", (e) => {
+      const diff = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(diff) > 40) nextPhoto();
+    }, { passive: true });
+
+    updateCounter();
+
+    // --- Мини-игра "Поймай сердечко" ---
+    const gameBtn = document.getElementById("gameBtn");
+    const gameArea = document.getElementById("gameArea");
+    const heart = document.getElementById("heart");
+    const gameScore = document.getElementById("gameScore");
+    const gameWin = document.getElementById("gameWin");
+
+    let score = 0;
+    const WIN_SCORE = 10;
+
+    function moveHeart() {
+      const areaW = gameArea.clientWidth;
+      const areaH = gameArea.clientHeight;
+      const size = heart.offsetWidth || 32;
+      const x = Math.random() * (areaW - size);
+      const y = Math.random() * (areaH - size);
+      heart.style.left = x + "px";
+      heart.style.top = y + "px";
+    }
+
+    function updateGameScore() {
+      gameScore.textContent = "Поймано: " + score + " / " + WIN_SCORE;
+    }
+
+    gameBtn.addEventListener("click", () => {
+      score = 0;
+      updateGameScore();
+      gameWin.classList.remove("show");
+      heart.style.display = "block";
+      gameArea.classList.add("active");
+      gameBtn.style.display = "none";
+      moveHeart();
+    });
+
+    heart.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (score >= WIN_SCORE) return;
+      score++;
+      updateGameScore();
+      if (score >= WIN_SCORE) {
+        heart.style.display = "none";
+        gameWin.classList.add("show");
+      } else {
+        moveHeart();
+      }
+    });
+
+    gameArea.addEventListener("click", () => {
+      if (score < WIN_SCORE) moveHeart();
+    });
+  </script>
+</body>
+</html>
